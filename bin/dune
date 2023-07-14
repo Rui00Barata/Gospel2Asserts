@@ -1,0 +1,4 @@
+(executable
+ (public_name Gospel2Asserts)
+ (name main)
+ (libraries Gospel2Asserts))
