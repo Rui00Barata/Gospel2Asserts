@@ -1,8 +1,6 @@
 module G = Gospel
 open G.Uast
 
-type pre_condition = term
-
 let fname = ref None
 
 let usage_msg = "toy_gospel <file>.ml"
@@ -36,22 +34,32 @@ let gospel_ast =
    
    
 let rec term_to_expression t = 
-  let open Format in
   match t.term_desc with
   | Ttrue                                   -> assert false
   | Tfalse                                  -> assert false
-  | Tconst _                                -> assert false
-  | Tpreid _                                -> assert false
+  | Tconst c                                -> 
+      let sed_c = Sexp_constant c in
+      {spexp_desc = sed_c; spexp_loc = t.term_loc; spexp_loc_stack = []; spexp_attributes = []}
+  | Tpreid q                                -> 
+    (match q with
+    | Qpreid qp ->
+      let v = Longident.Lident (qp.pid_str)  in
+      let sed_v = Sexp_ident (Location.mkloc v qp.pid_loc) in
+      {spexp_desc = sed_v; spexp_loc = t.term_loc; spexp_loc_stack = []; spexp_attributes = []}
+    | Qdot (_,qp) ->
+      let v = Longident.Lident (qp.pid_str)  in
+      let sed_v = Sexp_ident (Location.mkloc v qp.pid_loc) in
+      {spexp_desc = sed_v; spexp_loc = t.term_loc; spexp_loc_stack = []; spexp_attributes = []})
   | Tidapp _                                -> assert false
   | Tfield _                                -> assert false
   | Tapply _                                -> assert false
   | Tinfix (t1, pid, t2)                    -> 
-      let e2 = term_to_expression t1 in
-      let e3 = term_to_expression t2 in
-      let op = Longident.Lident (List.nth (String.split_on_char ' ' pid.pid_str) 1) in
-      let sed_op = Sexp_ident (Location.mkloc op pid.pid_loc) in
-      let e1 = {spexp_desc = sed_op; spexp_loc = pid.pid_loc; spexp_loc_stack = []; spexp_attributes = []} in
-      {spexp_desc = Sexp_apply (e1, [(Nolabel, e2); (Nolabel, e3)]); spexp_loc = pid.pid_loc; spexp_loc_stack = []; spexp_attributes = []}
+    let e2 = term_to_expression t1 in
+    let e3 = term_to_expression t2 in
+    let op = Longident.Lident (List.nth (String.split_on_char ' ' pid.pid_str) 1) in
+    let sed_op = Sexp_ident (Location.mkloc op pid.pid_loc) in
+    let e1 = {spexp_desc = sed_op; spexp_loc = pid.pid_loc; spexp_loc_stack = []; spexp_attributes = []} in
+    {spexp_desc = Sexp_apply (e1, [(Nolabel, e2); (Nolabel, e3)]); spexp_loc = t.term_loc; spexp_loc_stack = []; spexp_attributes = []}
   | Tbinop _                                -> assert false
   | Tnot _                                  -> assert false
   | Tif _                                   -> assert false
@@ -69,6 +77,8 @@ let rec term_to_expression t =
       assert false
 
 let updated_expression exp pre post =
+  let _ = List.map term_to_expression pre in
+  let _ = List.map term_to_expression post in
   exp
 
 
