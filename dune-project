@@ -5,22 +5,14 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github Rui00Barata/Gospel2Asserts))
 
-(authors "Author Name")
+(authors "Rui Barata")
 
-(maintainers "Maintainer Name")
 
-(license LICENSE)
-
-(documentation https://url/to/documentation)
 
 (package
  (name Gospel2Asserts)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune)
- (tags
-  (topics "to describe" your project)))
+ (depends ocaml dune))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
