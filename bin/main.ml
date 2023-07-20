@@ -57,7 +57,13 @@ let rec term_to_expression t =
     | Qdot _    -> raise Not_Supported)
   | Tidapp _                                -> raise Not_Supported
   | Tfield _                                -> raise Not_Supported
-  | Tapply _                                -> raise Not_Supported
+  | Tapply (t1, t2)                         -> 
+    let e1 = term_to_expression t1 in
+    let e2 = term_to_expression t2 in
+    (match e1.spexp_desc with
+    | Sexp_apply (e1_li, l) -> {spexp_desc = Sexp_apply (e1_li, l @ [(Nolabel, e2)]); spexp_loc = e1.spexp_loc; spexp_loc_stack = []; spexp_attributes = []}
+    | _                     -> {spexp_desc = Sexp_apply (e1, [(Nolabel, e2)]); spexp_loc = t.term_loc; spexp_loc_stack = []; spexp_attributes = []}
+    )
   | Tinfix (t1, pid, t2)                    -> 
     let e3 = term_to_expression t2 in
     let e2 = term_to_expression t1 in
